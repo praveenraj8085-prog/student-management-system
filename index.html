@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduPulse — Student Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="login-wrapper">
+    <div class="login-box">
+      <div class="brand-badge">EP</div>
+      <h1>EduPulse Portal</h1>
+      <p class="subtitle">Sign in to manage your academic workspace</p>
+      
+      <form id="login-form">
+        <div class="input-group">
+          <label for="login-user">Admin Username</label>
+          <input type="text" id="login-user" placeholder="Enter any username" value="admin" required />
+        </div>
+        <div class="input-group">
+          <label for="login-pass">Password</label>
+          <div class="pass-field">
+            <input type="password" id="login-pass" placeholder="Enter any password" value="admin123" required />
+            <button type="button" id="toggle-pass" class="text-btn">Show</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary full-width">Access Workspace →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="app-layout hidden">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge small">EP</div>
+        <div>
+          <h2>EduPulse</h2>
+          <span>Academic ERP</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="nav-item" data-tab="students">🎓 Students</button>
+        <button class="nav-item" data-tab="courses">📚 Courses</button>
+        <button class="nav-item" data-tab="trainers">👨‍🏫 Trainers</button>
+        <button class="nav-item" data-tab="attendance">📅 Attendance</button>
+        <button class="nav-item" data-tab="assignments">📝 Assignments</button>
+        <button class="nav-item" data-tab="reports">📈 Reports</button>
+        <button class="nav-item" data-tab="profile">⚙️ Profile</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn-danger full-width">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="topbar">
+        <h2 id="page-title">Dashboard Overview</h2>
+        <div class="admin-pill">
+          <span class="status-dot"></span>
+          <span id="topbar-admin-name">Admin</span>
+        </div>
+      </header>
+
+      <!-- 1. DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab-view active">
+        <div class="hero-banner">
+          <div>
+            <h3 id="welcome-heading">Hello, Admin!</h3>
+            <p>Here is today's academic summary, quick shortcuts, and task tracker.</p>
+          </div>
+          <div class="quick-btns">
+            <button class="btn-light" onclick="openModal('student-modal')">+ New Student</button>
+            <button class="btn-light" onclick="openModal('course-modal')">+ New Course</button>
+            <button class="btn-light" onclick="switchTab('attendance')">Mark Attendance</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Total Students</span>
+            <h3 id="dash-students">5</h3>
+          </div>
+          <div class="stat-card">
+            <span>Active Courses</span>
+            <h3 id="dash-courses">5</h3>
+          </div>
+          <div class="stat-card">
+            <span>Faculty / Trainers</span>
+            <h3 id="dash-trainers">5</h3>
+          </div>
+          <div class="stat-card">
+            <span>Present Today</span>
+            <h3 id="dash-present">0</h3>
+          </div>
+        </div>
+
+        <div class="two-col-grid">
+          <div class="card">
+            <h4>Assignment Status</h4>
+            <div class="mini-stats">
+              <div class="pill-box warning">Pending: <b id="dash-assign-pending">0</b></div>
+              <div class="pill-box danger">Overdue: <b id="dash-assign-overdue">0</b></div>
+              <div class="pill-box success">Completed: <b id="dash-assign-completed">0</b></div>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Recent System Activity</h4>
+            <ul id="activity-feed" class="activity-list">
+              <li class="muted">No recent actions recorded yet.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. STUDENTS TAB -->
+      <section id="tab-students" class="tab-view">
+        <div class="section-header">
+          <div class="filter-bar">
+            <input type="text" id="student-search" placeholder="Search name, ID or email..." onkeyup="renderStudents()" />
+            <select id="student-course-filter" onchange="renderStudents()">
+              <option value="ALL">All Courses</option>
+            </select>
+            <select id="student-status-filter" onchange="renderStudents()">
+              <option value="ALL">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="openModal('student-modal')">+ Add Student</button>
+        </div>
+
+        <div class="card table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Email & Phone</th>
+                <th>Enrolled Course</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. COURSES TAB -->
+      <section id="tab-courses" class="tab-view">
+        <div class="section-header">
+          <div class="filter-bar">
+            <input type="text" id="course-search" placeholder="Search course or code..." onkeyup="renderCourses()" />
+            <select id="course-sort" onchange="renderCourses()">
+              <option value="AZ">Sort: A to Z</option>
+              <option value="ZA">Sort: Z to A</option>
+              <option value="FEE_LOW">Fee: Low to High</option>
+              <option value="FEE_HIGH">Fee: High to Low</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="openModal('course-modal')">+ Add Course</button>
+        </div>
+
+        <div class="card table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Course ID</th>
+                <th>Course Title</th>
+                <th>Duration</th>
+                <th>Fee (INR)</th>
+                <th>Assigned Trainer</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="courses-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. TRAINERS TAB -->
+      <section id="tab-trainers" class="tab-view">
+        <div class="section-header">
+          <div class="filter-bar">
+            <input type="text" id="trainer-search" placeholder="Search trainer or expertise..." onkeyup="renderTrainers()" />
+          </div>
+          <button class="btn-primary" onclick="openModal('trainer-modal')">+ Add Trainer</button>
+        </div>
+
+        <div class="card table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Trainer ID</th>
+                <th>Name</th>
+                <th>Expertise</th>
+                <th>Phone</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="trainers-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. ATTENDANCE TAB -->
+      <section id="tab-attendance" class="tab-view">
+        <div class="card">
+          <h4>Mark Daily Attendance</h4>
+          <div class="filter-bar" style="margin-top: 12px;">
+            <select id="att-course-select" onchange="loadAttendanceSheet()">
+              <option value="">-- Select Course --</option>
+            </select>
+            <input type="date" id="att-date" onchange="loadAttendanceSheet()" />
+          </div>
+
+          <div class="table-container" style="margin-top: 16px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Student Name</th>
+                  <th>Mark Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-tbody">
+                <tr><td colspan="3" class="muted center">Select a course and date to load students.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-primary" style="margin-top: 16px;" onclick="saveAttendance()">Save Attendance Record</button>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <h4>Saved Attendance History</h4>
+          <div class="table-container" style="margin-top: 12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Course</th>
+                  <th>Student</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. ASSIGNMENTS TAB -->
+      <section id="tab-assignments" class="tab-view">
+        <div class="two-col-grid">
+          <div class="card">
+            <h4>Create New Assignment</h4>
+            <form id="assignment-form" style="margin-top: 12px;">
+              <div class="input-group">
+                <label>Assignment Title</label>
+                <input type="text" id="assign-title" placeholder="e.g. JavaScript DOM Project" required />
+              </div>
+              <div class="input-group">
+                <label>Target Course</label>
+                <select id="assign-course" required></select>
+              </div>
+              <div class="input-group">
+                <label>Due Date</label>
+                <input type="date" id="assign-due" required />
+              </div>
+              <div class="input-group">
+                <label>Status</label>
+                <select id="assign-status">
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Overdue">Overdue</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary full-width">Publish Assignment</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h4>Active Assignments</h4>
+            <div id="assignments-list" class="stack-list" style="margin-top: 12px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. REPORTS TAB -->
+      <section id="tab-reports" class="tab-view">
+        <div class="section-header">
+          <h3>Course Enrollment & Analytics Report</h3>
+          <button class="btn-primary" onclick="exportCSV()">Export Report (CSV)</button>
+        </div>
+        <div class="card table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Course ID</th>
+                <th>Course Name</th>
+                <th>Trainer</th>
+                <th>Enrolled Students</th>
+                <th>Course Fee</th>
+              </tr>
+            </thead>
+            <tbody id="reports-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 8. PROFILE TAB -->
+      <section id="tab-profile" class="tab-view">
+        <div class="two-col-grid">
+          <div class="card">
+            <h4>Administrator Details</h4>
+            <form id="profile-form" style="margin-top: 12px;">
+              <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="prof-name" value="Admin" required />
+              </div>
+              <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="prof-email" placeholder="admin@edupulse.edu" />
+              </div>
+              <button type="submit" class="btn-primary">Update Profile</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h4>Security & Password</h4>
+            <form id="password-form" style="margin-top: 12px;">
+              <div class="input-group">
+                <label>New Password (Min 6 chars)</label>
+                <input type="password" id="new-pass" required minlength="6" />
+              </div>
+              <div class="input-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirm-pass" required minlength="6" />
+              </div>
+              <button type="submit" class="btn-primary">Change Password</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <div id="student-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3>Register New Student</h3>
+      <form id="student-form">
+        <div class="input-group"><label>Full Name</label><input type="text" id="stu-name" required /></div>
+        <div class="input-group"><label>Email</label><input type="email" id="stu-email" required /></div>
+        <div class="input-group"><label>Phone</label><input type="tel" id="stu-phone" required /></div>
+        <div class="input-group"><label>Select Course</label><select id="stu-course" required></select></div>
+        <div class="input-group">
+          <label>Status</label>
+          <select id="stu-status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('student-modal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="course-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3>Create New Course</h3>
+      <form id="course-form">
+        <div class="input-group"><label>Course Title</label><input type="text" id="crs-name" required /></div>
+        <div class="input-group"><label>Duration (e.g., 3 Months)</label><input type="text" id="crs-duration" required /></div>
+        <div class="input-group"><label>Course Fee (INR)</label><input type="number" id="crs-fee" required /></div>
+        <div class="input-group"><label>Assign Trainer</label><select id="crs-trainer"></select></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('course-modal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="trainer-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3>Add New Trainer</h3>
+      <form id="trainer-form">
+        <div class="input-group"><label>Trainer Name</label><input type="text" id="trn-name" required /></div>
+        <div class="input-group"><label>Expertise (e.g., Full Stack)</label><input type="text" id="trn-exp" required /></div>
+        <div class="input-group"><label>Phone Number</label><input type="tel" id="trn-phone" required /></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('trainer-modal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Trainer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
